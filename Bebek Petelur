@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BebekPro - Manajemen Peternakan Bebek Petelur</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        amberDuck: {
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for table container */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 flex flex-col md:flex-row min-h-screen">
+
+    <!-- Mobile Top Header -->
+    <div class="md:hidden bg-brand-800 text-white flex justify-between items-center p-4 sticky top-0 z-50 shadow-md">
+        <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-[#f59e0b] fa-egg text-amber-400 text-2xl"></i>
+            <span class="font-bold text-lg tracking-wide">BebekPro</span>
+        </div>
+        <button id="mobileMenuBtn" class="text-white focus:outline-none p-1">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-brand-900 text-slate-100 flex-shrink-0 z-40 transition-all duration-300">
+        <div class="p-5 flex items-center space-x-3 border-b border-brand-800 hidden md:flex">
+            <div class="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-egg text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">BebekPro</h1>
+                <p class="text-xs text-brand-100 opacity-80">Manajemen Bebek Petelur</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-colors bg-brand-700 text-white">
+                <i class="fa-solid fa-chart-line w-5 text-center"></i>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('daily-log')" id="nav-daily-log" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-colors text-brand-100 hover:bg-brand-800">
+                <i class="fa-solid fa-clipboard-list w-5 text-center"></i>
+                <span>Catatan Harian</span>
+            </button>
+            <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-colors text-brand-100 hover:bg-brand-800">
+                <i class="fa-solid fa-wheat-awn w-5 text-center"></i>
+                <span>Stok & Formulasi Pakan</span>
+            </button>
+            <button onclick="switchTab('finance')" id="nav-finance" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-colors text-brand-100 hover:bg-brand-800">
+                <i class="fa-solid fa-wallet w-5 text-center"></i>
+                <span>Penjualan & Keuangan</span>
+            </button>
+            <button onclick="switchTab('health')" id="nav-health" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-colors text-brand-100 hover:bg-brand-800">
+                <i class="fa-solid fa-notes-medical w-5 text-center"></i>
+                <span>Jadwal Kesehatan</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-brand-800 text-xs text-brand-100 space-y-2">
+            <div class="flex items-center justify-between">
+                <span>Versi Sistem</span>
+                <span class="bg-brand-800 px-2 py-0.5 rounded text-amber-300 font-mono">v2.1</span>
+            </div>
+            <button onclick="resetDataToDemo()" class="w-full text-left py-1 text-slate-300 hover:text-white transition flex items-center space-x-1">
+                <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                <span>Muat Data Demo</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 bg-slate-50 flex flex-col min-h-0 overflow-y-auto">
+        <!-- Top Banner / App Info Bar -->
+        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h2 id="pageTitle" class="text-xl font-bold text-slate-800">Dashboard Overview</h2>
+                <p class="text-xs text-slate-500">Ringkasan performa dan produktivitas ternak hari ini</p>
+            </div>
+            <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <button onclick="exportToCSV()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-2 rounded-lg border border-emerald-200 transition flex items-center space-x-1.5">
+                    <i class="fa-solid fa-file-csv text-sm"></i>
+                    <span>Ekspor CSV</span>
+                </button>
+                <div class="text-right pl-3 border-l border-slate-200">
+                    <span class="text-xs text-slate-400 block">Tanggal Hari Ini</span>
+                    <span id="currentDateStr" class="text-sm font-semibold text-slate-700">--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Sections -->
+        <div class="p-4 md:p-6 space-y-6">
+
+            <!-- Dynamic Alert Toast -->
+            <div id="toastAlert" class="hidden p-4 rounded-xl shadow-md border flex items-center justify-between transition-all">
+                <div class="flex items-center space-x-3">
+                    <i id="toastIcon" class="fa-solid text-xl"></i>
+                    <span id="toastMsg" class="text-sm font-medium"></span>
+                </div>
+                <button onclick="closeToast()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- TAB 1: DASHBOARD OVERVIEW -->
+            <section id="tab-dashboard" class="tab-content space-y-6">
+                <!-- Top Key Metrics Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- Pop Total Betina -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-medium text-slate-500">Bebek Betina</p>
+                                <h3 id="dashPopFemale" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Jantan: <span id="dashPopMale">0</span> ekor</p>
+                            </div>
+                            <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <i class="fa-solid fa-[#22c55e] fa-crow text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Produksi Telur Hari Ini -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-medium text-slate-500">Telur Hari Ini</p>
+                                <h3 id="dashTodayEggs" class="text-2xl font-bold text-amber-600 mt-1">0 <span class="text-xs font-normal text-slate-500">butir</span></h3>
+                                <p class="text-[11px] text-emerald-600 mt-0.5 font-medium"><i class="fa-solid fa-check-circle"></i> <span id="dashTodayGoodEggs">0</span> Utuh</p>
+                            </div>
+                            <div class="p-2.5 bg-amber-50 text-amber-500 rounded-xl">
+                                <i class="fa-solid fa-egg text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HDP Rate -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-medium text-slate-500">Hen Day Prod. (HDP)</p>
+                                <h3 id="dashHDP" class="text-2xl font-bold text-indigo-600 mt-1">0%</h3>
+                                <p id="dashHDPBadge" class="text-[11px] text-slate-500 mt-0.5">Target Rata-rata: 70-85%</p>
+                            </div>
+                            <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                                <i class="fa-solid fa-percent text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pakan / Ekor / Hari -->
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-medium text-slate-500">Konsumsi Pakan</p>
+                                <h3 id="dashFeedPerDuck" class="text-2xl font-bold text-slate-800 mt-1">0 <span class="text-xs font-normal text-slate-500">g/ekor</span></h3>
+                                <p class="text-[11px] text-slate-500 mt-0.5">FCR Terakhir: <span id="dashFCR" class="font-semibold text-slate-700">0</span></p>
+                            </div>
+                            <div class="p-2.5 bg-teal-50 text-teal-600 rounded-xl">
+                                <i class="fa-solid fa-bowl-food text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial & Warning Banner -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-br from-brand-800 to-brand-900 text-white p-5 rounded-2xl shadow-sm md:col-span-2 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs uppercase tracking-wider text-brand-200 font-semibold">Keuangan Bulan Ini</span>
+                                <div class="flex items-baseline space-x-3 mt-1">
+                                    <h4 id="dashMonthProfit" class="text-3xl font-extrabold text-amber-300">Rp 0</h4>
+                                    <span class="text-xs text-brand-100">(Estimasi Profit Clean)</span>
+                                </div>
+                            </div>
+                            <span class="bg-brand-700/60 px-3 py-1 rounded-full text-xs text-brand-100 border border-brand-600">
+                                <i class="fa-solid fa-calendar-days mr-1"></i> Bln Ini
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-brand-700/60">
+                            <div>
+                                <p class="text-xs text-brand-200">Total Pemasukan</p>
+                                <p id="dashMonthIncome" class="text-lg font-bold text-white">Rp 0</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-brand-200">Total Pengeluaran</p>
+                                <p id="dashMonthExpense" class="text-lg font-bold text-rose-300">Rp 0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Alerts / Actions -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                                <span>Peringatan Stok & Perhatian</span>
+                            </h4>
+                            <div id="dashAlertList" class="mt-3 space-y-2 text-xs">
+                                <!-- Dynamic Alerts Here -->
+                            </div>
+                        </div>
+                        <button onclick="switchTab('daily-log')" class="mt-4 w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Catat Hasil Telur Hari Ini</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visual Charts Section -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
+                        <div>
+                            <h3 class="font-bold text-slate-800">Tren Produksi Telur & Pakan</h3>
+                            <p class="text-xs text-slate-500">Grafik perbandingan produksi telur (butir) dan konsumsi pakan (kg)</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-slate-500">Tampilkan:</span>
+                            <select id="chartPeriod" onchange="updateCharts()" class="text-xs bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 font-medium text-slate-700">
+                                <option value="7">7 Hari Terakhir</option>
+                                <option value="14">14 Hari Terakhir</option>
+                                <option value="30">30 Hari Terakhir</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="h-72 w-full">
+                        <canvas id="productionChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: DAILY LOG & HDP CALCULATOR -->
+            <section id="tab-daily-log" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Form Input Log Harian -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-1">
+                        <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center space-x-2">
+                            <i class="fa-solid fa-pen-to-square text-brand-600"></i>
+                            <span>Input Catatan Harian</span>
+                        </h3>
+                        <form id="dailyLogForm" onsubmit="saveDailyLog(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Tanggal Record</label>
+                                <input type="date" id="logDate" required class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Kandang / Flock</label>
+                                <select id="logFlock" class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                    <option value="Kandang A">Kandang A (Utama)</option>
+                                    <option value="Kandang B">Kandang B</option>
+                                    <option value="Kandang C">Kandang C (Remaja)</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 space-y-3">
+                                <span class="font-bold text-amber-800 text-xs block">Hasil Panen Telur (Butir)</span>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label class="block text-slate-600 mb-0.5">Utuh/Bagus</label>
+                                        <input type="number" id="logEggsGood" min="0" value="0" required oninput="calcLiveHDP()" class="w-full border border-slate-300 rounded-lg p-2 font-bold text-emerald-700">
+                                    </div>
+                                    <div>
+                                        <label class="block text-slate-600 mb-0.5">Retak/Rusak</label>
+                                        <input type="number" id="logEggsBroken" min="0" value="0" oninput="calcLiveHDP()" class="w-full border border-slate-300 rounded-lg p-2 font-bold text-rose-600">
+                                    </div>
+                                    <div>
+                                        <label class="block text-slate-600 mb-0.5">Kecil/Afkir</label>
+                                        <input type="number" id="logEggsSmall" min="0" value="0" oninput="calcLiveHDP()" class="w-full border border-slate-300 rounded-lg p-2 font-bold text-amber-600">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Kematian (Ekor)</label>
+                                    <input type="number" id="logDeath" min="0" value="0" class="w-full border border-slate-300 rounded-xl p-2.5">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Afkir/Sakit (Ekor)</label>
+                                    <input type="number" id="logCulled" min="0" value="0" class="w-full border border-slate-300 rounded-xl p-2.5">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Total Pakan Diberikan (Kg)</label>
+                                <input type="number" step="0.1" id="logFeedKg" min="0" value="0" required oninput="calcLiveHDP()" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold text-slate-800">
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Catatan Cuaca / Health</label>
+                                <input type="text" id="logNotes" placeholder="Misal: Cerah, kotoran normal, nafsu makan baik" class="w-full border border-slate-300 rounded-xl p-2.5">
+                            </div>
+
+                            <!-- Live Calc Indicator -->
+                            <div class="bg-slate-100 p-3 rounded-xl space-y-1 text-slate-700 font-mono">
+                                <div class="flex justify-between">
+                                    <span>Estimasi HDP:</span>
+                                    <strong id="liveHDP" class="text-brand-700">0%</strong>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Pakan / Ekor:</span>
+                                    <strong id="liveFeedPerDuck" class="text-slate-800">0 gram</strong>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-sm transition">
+                                Simpan Pencatatan
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Table History Log -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800">Riwayat Pencatatan Harian</h3>
+                            <span class="text-xs text-slate-400">Menampilkan pencatatan terbaru</span>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar flex-1">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                                        <th class="p-3">Tanggal</th>
+                                        <th class="p-3">Kandang</th>
+                                        <th class="p-3">Telur Utuh</th>
+                                        <th class="p-3">Telur Rusak</th>
+                                        <th class="p-3">HDP (%)</th>
+                                        <th class="p-3">Pakan (Kg)</th>
+                                        <th class="p-3">Mati/Afkir</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dailyLogTableBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: INVENTORY & FEED MIX CALCULATOR -->
+            <section id="tab-inventory" class="tab-content hidden space-y-6">
+                <!-- Top Row: Inventory Cards -->
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Stok Bahan Pakan & Farm Inventory</h3>
+                        <p class="text-xs text-slate-500">Kelola ketersediaan stok konsentrat, dedak, jagung, & suplemen</p>
+                    </div>
+                    <button onclick="openAddFeedModal()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Tambah Stok Pakan</span>
+                    </button>
+                </div>
+
+                <div id="feedStockGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Dynamic Feed Stock Cards -->
+                </div>
+
+                <!-- Feed Formulation Mixer Calculator -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center space-x-2">
+                            <i class="fa-solid fa-calculator text-amber-500"></i>
+                            <span>Kalkulator Mixing / Formulasi Ransum Pakan Bebek Petelur</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Hitung perkiraan Protein Kasar (PK) & Energi Metabolis (EM) pakan racikan Anda (Standar Bebek Petelur: PK 17-19%, EM 2700-2800 kcal/kg)</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-3">
+                            <div class="grid grid-cols-12 gap-2 text-xs font-semibold text-slate-500 px-1">
+                                <span class="col-span-4">Bahan Pakan</span>
+                                <span class="col-span-3">Proporsi (Kg)</span>
+                                <span class="col-span-2">Std PK (%)</span>
+                                <span class="col-span-3">Aksi</span>
+                            </div>
+
+                            <!-- Mix Rows Container -->
+                            <div id="feedMixRows" class="space-y-2">
+                                <!-- Dynamic Mix Rows -->
+                            </div>
+
+                            <button onclick="addMixRow()" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center space-x-1 pt-1">
+                                <i class="fa-solid fa-plus-circle"></i>
+                                <span>Tambah Bahan Lain</span>
+                            </button>
+                        </div>
+
+                        <!-- Calc Result Panel -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between space-y-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm mb-3">Hasil Analisis Nutrisi Mix</h4>
+                                <div class="space-y-3 text-xs">
+                                    <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                                        <span class="text-slate-600">Total Berat Ransum:</span>
+                                        <span id="mixTotalWeight" class="font-bold text-slate-800 text-sm">0 Kg</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                                        <span class="text-slate-600">Estimasi Protein Kasar (PK):</span>
+                                        <span id="mixTotalPK" class="font-bold text-emerald-600 text-base">0 %</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-slate-600">Status Nutrisi:</span>
+                                        <span id="mixStatusBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">Belum dihitung</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-amber-50 rounded-lg text-[11px] text-amber-800 border border-amber-200 leading-relaxed">
+                                <i class="fa-solid fa-lightbulb text-amber-600 mr-1"></i>
+                                <strong>Rasio Standar Populer (1:2:3):</strong> 1 Bagian Konsentrat (PK 36%), 2 Bagian Jagung (PK 8.5%), 3 Bagian Dedak Halus (PK 11%).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: FINANCE & SALES -->
+            <section id="tab-finance" class="tab-content hidden space-y-6">
+                <!-- Financial Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs text-slate-500 font-medium">Total Pemasukan (Bulan Ini)</p>
+                        <h3 id="finTotalIncome" class="text-2xl font-bold text-emerald-600 mt-1">Rp 0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1">Dari Penjualan Telur & Bebek Afkir</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs text-slate-500 font-medium">Total Pengeluaran (Bulan Ini)</p>
+                        <h3 id="finTotalExpense" class="text-2xl font-bold text-rose-600 mt-1">Rp 0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1">Pembelian Pakan, Obat & Operasional</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-xs text-slate-500 font-medium">Estimasi Profit / Laba Bersih</p>
+                        <h3 id="finNetProfit" class="text-2xl font-bold text-brand-700 mt-1">Rp 0</h3>
+                        <p id="finROIStatus" class="text-[11px] font-semibold text-emerald-600 mt-1">Margin Positif</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Form Transaksi / Penjualan -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-1">
+                        <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center space-x-2">
+                            <i class="fa-solid fa-money-bill-wave text-emerald-600"></i>
+                            <span>Catat Transaksi Keuangan</span>
+                        </h3>
+                        <form id="financeForm" onsubmit="saveTransaction(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Tipe Transaksi</label>
+                                <select id="transType" onchange="toggleTransFields()" class="w-full border border-slate-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                    <option value="INCOME">Pemasukan (Penjualan)</option>
+                                    <option value="EXPENSE">Pengeluaran (Biaya/Pakan)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Tanggal</label>
+                                <input type="date" id="transDate" required class="w-full border border-slate-300 rounded-xl p-2.5">
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Kategori</label>
+                                <select id="transCategory" class="w-full border border-slate-300 rounded-xl p-2.5">
+                                    <!-- Dynamic Options based on type -->
+                                </select>
+                            </div>
+
+                            <div id="eggSaleCalcBox" class="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+                                <span class="font-bold text-amber-800 text-xs block">Opsi Hitung Telur</span>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-slate-600 mb-0.5">Jumlah</label>
+                                        <input type="number" id="transEggQty" min="0" value="0" oninput="calcEggSaleTotal()" class="w-full border border-slate-300 rounded-lg p-2">
+                                    </div>
+                                    <div>
+                                        <label class="block text-slate-600 mb-0.5">Satuan</label>
+                                        <select id="transEggUnit" onchange="calcEggSaleTotal()" class="w-full border border-slate-300 rounded-lg p-2">
+                                            <option value="butir">Butir</option>
+                                            <option value="ikat">Ikat (30 Butir)</option>
+                                            <option value="karpet">Karpet/Tray (30)</option>
+                                            <option value="kg">Kg (~15 Butir)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-slate-600 mb-0.5">Harga per Satuan (Rp)</label>
+                                    <input type="number" id="transEggUnitPrice" min="0" value="2200" oninput="calcEggSaleTotal()" class="w-full border border-slate-300 rounded-lg p-2">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Total Nominal Rp</label>
+                                <input type="number" id="transAmount" min="0" required class="w-full border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-800">
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Keterangan / Pembeli</label>
+                                <input type="text" id="transDesc" placeholder="Misal: Dibelikan Pengepul Pak Agus" class="w-full border border-slate-300 rounded-xl p-2.5">
+                            </div>
+
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-sm transition">
+                                Simpan Transaksi
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Riwayat Transaksi Table -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800">Buku Kas & Riwayat Transaksi</h3>
+                            <span class="text-xs text-slate-400">Pemasukan & Pengeluaran</span>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar flex-1">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
+                                        <th class="p-3">Tanggal</th>
+                                        <th class="p-3">Jenis</th>
+                                        <th class="p-3">Kategori</th>
+                                        <th class="p-3">Keterangan</th>
+                                        <th class="p-3 text-right">Nominal (Rp)</th>
+                                        <th class="p-3 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="financeTableBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: HEALTH & SCHEDULE -->
+            <section id="tab-health" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Jadwal Vaksinasi & Sanitasi Kandang</h3>
+                        <p class="text-xs text-slate-500">Program pencegahan penyakit ND (Tetelo), Flu Burung (AI), & Kolera</p>
+                    </div>
+                    <button onclick="openAddScheduleModal()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Tambah Agenda</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Schedule Checklist -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h4 class="font-bold text-slate-800 text-sm flex items-center justify-between">
+                            <span>Agenda Mendatang & Rutin</span>
+                            <span class="text-xs font-normal text-slate-400">Checklist jika selesai</span>
+                        </h4>
+                        <div id="scheduleList" class="space-y-3 text-xs">
+                            <!-- Dynamic Schedule Items -->
+                        </div>
+                    </div>
+
+                    <!-- Vaccination Guide Card -->
+                    <div class="bg-amber-50/60 p-5 rounded-2xl border border-amber-200/80 space-y-3">
+                        <h4 class="font-bold text-amber-900 text-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-shield-virus text-amber-600"></i>
+                            <span>Panduan Vaksinasi Standar Bebek Petelur</span>
+                        </h4>
+                        <ul class="text-xs text-amber-900/80 space-y-2 list-disc pl-4 leading-relaxed">
+                            <li><strong>Umur 4-7 Hari:</strong> Vaksin ND (Newcastle Disease) Hitchner B1 / Lasota via Tetes Mata.</li>
+                            <li><strong>Umur 3-4 Minggu:</strong> Vaksin AI (Avian Influenza / Flu Burung) Inaktif Kanker / Suntik Dada.</li>
+                            <li><strong>Umur 8 Minggu:</strong> Vaksin ND Lasota / Booster & Vaksin Kolera (Berak Hijau).</li>
+                            <li><strong>Umur 16 Minggu (Sebelum Bertelur):</strong> Booster ND & AI Inaktif.</li>
+                            <li><strong>Rutin Tiap 1-2 Bulan:</strong> Pemberian Obat Cacing & Vitamin Antistres pasca cuaca ekstrem.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal Form Tambah Stok Pakan -->
+    <div id="feedModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base">Tambah / Update Stok Pakan</h3>
+                <button onclick="closeFeedModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="feedStockForm" onsubmit="saveFeedStock(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Nama Bahan Pakan</label>
+                    <input type="text" id="feedName" required placeholder="Misal: Konsentrat Bebek 144" class="w-full border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Jumlah Stok (Kg)</label>
+                        <input type="number" id="feedQty" step="0.1" required class="w-full border border-slate-300 rounded-xl p-2.5">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Batas Stok Minimal (Kg)</label>
+                        <input type="number" id="feedMin" value="20" required class="w-full border border-slate-300 rounded-xl p-2.5">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Harga Pembelian per Kg (Rp)</label>
+                    <input type="number" id="feedPrice" value="8500" required class="w-full border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeFeedModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-sm">Simpan Stok</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Form Agenda / Jadwal Kesehatan -->
+    <div id="scheduleModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-base">Tambah Agenda Kesehatan / Rutinitas</h3>
+                <button onclick="closeScheduleModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="scheduleForm" onsubmit="saveSchedule(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Judul Agenda</label>
+                    <input type="text" id="schedTitle" required placeholder="Misal: Vaksin ND Booster Kandang A" class="w-full border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Tanggal Pelaksanaan</label>
+                    <input type="date" id="schedDate" required class="w-full border border-slate-300 rounded-xl p-2.5">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Kategori</label>
+                    <select id="schedCategory" class="w-full border border-slate-300 rounded-xl p-2.5">
+                        <option value="Vaksinasi">Vaksinasi</option>
+                        <option value="Vitamin/Obat">Pemberian Vitamin/Obat</option>
+                        <option value="Sanitasi">Sanitasi & Semprot Kandang</option>
+                        <option value="Lainnya">Lain-lain</option>
+                    </select>
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-sm">Simpan Agenda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Data Store Keys
+        const STORE_LOGS = 'bebekpro_logs';
+        const STORE_FEEDS = 'bebekpro_feeds';
+        const STORE_TRANS = 'bebekpro_trans';
+        const STORE_SCHED = 'bebekpro_sched';
+        const STORE_POP = 'bebekpro_pop';
+
+        // Initial Dummy Data setup if empty
+        const initialFlockPop = { female: 500, male: 25 };
+
+        const initialFeeds = [
+            { id: 1, name: 'Konsentrat Bebek Petelur (PK 36%)', qty: 150, min: 50, price: 9500, pk: 36 },
+            { id: 2, name: 'Dedak Halus / Bekatul', qty: 220, min: 80, price: 3800, pk: 11 },
+            { id: 3, name: 'Jagung Giling / Pipil', qty: 180, min: 60, price: 6200, pk: 8.5 },
+            { id: 4, name: 'Mineral & Grit Kerang', qty: 35, min: 10, price: 5000, pk: 0 }
+        ];
+
+        const initialSchedules = [
+            { id: 1, title: 'Vaksinasi ND Lasota Booster', date: getOffsetDate(2), category: 'Vaksinasi', done: false },
+            { id: 2, title: 'Semprot Disinfektan Kandang A', date: getOffsetDate(0), category: 'Sanitasi', done: false },
+            { id: 3, title: 'Pemberian Vitamin Antistres Vitachick', date: getOffsetDate(-1), category: 'Vitamin/Obat', done: true }
+        ];
+
+        // Global Chart Ref
+        let prodChart = null;
+
+        // Mixer Ingredients State
+        let mixRows = [
+            { name: 'Konsentrat Bebek Petelur (PK 36%)', weight: 1, pk: 36 },
+            { name: 'Jagung Giling / Pipil', weight: 2, pk: 8.5 },
+            { name: 'Dedak Halus / Bekatul', weight: 3, pk: 11 }
+        ];
+
+        // Utility Date Function
+        function getOffsetDate(daysOffset) {
+            const d = new Date();
+            d.setDate(d.getDate() + daysOffset);
+            return d.toISOString().split('T')[0];
+        }
+
+        // --- Core Init ---
+        window.onload = function() {
+            document.getElementById('currentDateStr').innerText = new Date().toLocaleDateString('id-ID', {
+                weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            // Set default date input fields
+            document.getElementById('logDate').value = getOffsetDate(0);
+            document.getElementById('transDate').value = getOffsetDate(0);
+
+            // Setup Mobile Menu Toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('hidden');
+            });
+
+            initDataStorage();
+            toggleTransFields();
+            renderAll();
+        }
+
+        function initDataStorage() {
+            if (!localStorage.getItem(STORE_POP)) {
+                localStorage.setItem(STORE_POP, JSON.stringify(initialFlockPop));
+            }
+            if (!localStorage.getItem(STORE_FEEDS)) {
+                localStorage.setItem(STORE_FEEDS, JSON.stringify(initialFeeds));
+            }
+            if (!localStorage.getItem(STORE_SCHED)) {
+                localStorage.setItem(STORE_SCHED, JSON.stringify(initialSchedules));
+            }
+            if (!localStorage.getItem(STORE_LOGS)) {
+                // Generate 7 days initial dummy log
+                const dummyLogs = [];
+                for (let i = 6; i >= 0; i--) {
+                    const dt = getOffsetDate(-i);
+                    const good = Math.floor(380 + Math.random() * 25);
+                    const broken = Math.floor(2 + Math.random() * 4);
+                    const small = Math.floor(1 + Math.random() * 3);
+                    dummyLogs.push({
+                        id: Date.now() - i * 86400000,
+                        date: dt,
+                        flock: 'Kandang A',
+                        goodEggs: good,
+                        brokenEggs: broken,
+                        smallEggs: small,
+                        death: i === 3 ? 1 : 0,
+                        culled: 0,
+                        feedKg: 62.5,
+                        notes: 'Kondisi bebek sehat, cuaca cerah'
+                    });
+                }
+                localStorage.setItem(STORE_LOGS, JSON.stringify(dummyLogs));
+            }
+            if (!localStorage.getItem(STORE_TRANS)) {
+                const dummyTrans = [
+                    { id: 101, type: 'INCOME', category: 'Penjualan Telur', date: getOffsetDate(-1), amount: 880000, desc: 'Penjualan 400 butir ke Agen' },
+                    { id: 102, type: 'EXPENSE', category: 'Pembelian Pakan', date: getOffsetDate(-3), amount: 1250000, desc: 'Beli Konsentrat 1.5 kuintal' }
+                ];
+                localStorage.setItem(STORE_TRANS, JSON.stringify(dummyTrans));
+            }
+        }
+
+        function resetDataToDemo() {
+            if (confirm("Reset dan muat ulang data contoh (demo)? Data saat ini akan diganti.")) {
+                localStorage.clear();
+                initDataStorage();
+                renderAll();
+                showToast("Data demo berhasil dimuat!", "success");
+            }
+        }
+
+        // Navigation Switch
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-700', 'text-white');
+                btn.classList.add('text-brand-100', 'hover:bg-brand-800');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-brand-700', 'text-white');
+                activeNav.classList.remove('text-brand-100', 'hover:bg-brand-800');
+            }
+
+            // Update Page Title
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'daily-log': 'Pencatatan Harian & HDP',
+                'inventory': 'Stok Pakan & Kalkulator Formulasi',
+                'finance': 'Penjualan & Keuangan',
+                'health': 'Jadwal Kesehatan & Sanitisasi'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId] || 'BebekPro';
+
+            if (tabId === 'dashboard') {
+                renderCharts();
+            }
+
+            // Auto close mobile menu if open
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+        }
+
+        // --- Render Engine ---
+        function renderAll() {
+            renderDashboard();
+            renderDailyLogs();
+            renderInventory();
+            renderFeedMixer();
+            renderFinance();
+            renderSchedules();
+        }
+
+        function getLogs() { return JSON.parse(localStorage.getItem(STORE_LOGS)) || []; }
+        function getFeeds() { return JSON.parse(localStorage.getItem(STORE_FEEDS)) || []; }
+        function getTrans() { return JSON.parse(localStorage.getItem(STORE_TRANS)) || []; }
+        function getSched() { return JSON.parse(localStorage.getItem(STORE_SCHED)) || []; }
+        function getPop() { return JSON.parse(localStorage.getItem(STORE_POP)) || initialFlockPop; }
+
+        // --- DASHBOARD RENDER ---
+        function renderDashboard() {
+            const logs = getLogs();
+            const pop = getPop();
+            const feeds = getFeeds();
+            const trans = getTrans();
+
+            // Total Pop
+            document.getElementById('dashPopFemale').innerText = pop.female;
+            document.getElementById('dashPopMale').innerText = pop.male;
+
+            // Today's log or latest log
+            const todayStr = getOffsetDate(0);
+            const todayLog = logs.find(l => l.date === todayStr) || (logs.length > 0 ? logs[0] : null);
+
+            if (todayLog) {
+                const totalTodayEggs = todayLog.goodEggs + todayLog.brokenEggs + todayLog.smallEggs;
+                document.getElementById('dashTodayEggs').innerHTML = `${totalTodayEggs} <span class="text-xs font-normal text-slate-500">butir</span>`;
+                document.getElementById('dashTodayGoodEggs').innerText = todayLog.goodEggs;
+
+                // HDP Calculate: (Total Telur Utuh / Total Bebek Betina) * 100
+                const hdp = pop.female > 0 ? ((todayLog.goodEggs / pop.female) * 100).toFixed(1) : 0;
+                document.getElementById('dashHDP').innerText = `${hdp}%`;
+
+                // Feed per duck in grams
+                const feedGrams = pop.female > 0 ? Math.round((todayLog.feedKg * 1000) / pop.female) : 0;
+                document.getElementById('dashFeedPerDuck').innerHTML = `${feedGrams} <span class="text-xs font-normal text-slate-500">g/ekor</span>`;
+
+                // FCR Calc approx (Feed Kg / (Total Eggs * 0.065 kg average weight))
+                const totalEggKg = todayLog.goodEggs * 0.068; // average 68g per duck egg
+                const fcr = totalEggKg > 0 ? (todayLog.feedKg / totalEggKg).toFixed(2) : '--';
+                document.getElementById('dashFCR').innerText = fcr;
+            }
+
+            // Month Financials
+            let incMonth = 0;
+            let expMonth = 0;
+            const currentMonthStr = new Date().toISOString().substring(0, 7); // YYYY-MM
+
+            trans.forEach(t => {
+                if (t.date.startsWith(currentMonthStr)) {
+                    if (t.type === 'INCOME') incMonth += Number(t.amount);
+                    if (t.type === 'EXPENSE') expMonth += Number(t.amount);
+                }
+            });
+
+            const netMonth = incMonth - expMonth;
+            document.getElementById('dashMonthIncome').innerText = formatRp(incMonth);
+            document.getElementById('dashMonthExpense').innerText = formatRp(expMonth);
+            document.getElementById('dashMonthProfit').innerText = formatRp(netMonth);
+
+            // Feed Stock Alerts
+            const alertBox = document.getElementById('dashAlertList');
+            alertBox.innerHTML = '';
+            let alertCount = 0;
+
+            feeds.forEach(f => {
+                if (f.qty <= f.min) {
+                    alertCount++;
+                    alertBox.innerHTML += `
+                        <div class="flex items-center justify-between text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                            <span>Stok <strong>${f.name}</strong> sisa ${f.qty} kg</span>
+                            <span class="font-bold text-[10px] bg-amber-200 px-1.5 py-0.5 rounded">Rendah</span>
+                        </div>
+                    `;
+                }
+            });
+
+            if (alertCount === 0) {
+                alertBox.innerHTML = `<p class="text-emerald-600 bg-emerald-50 p-2 rounded-lg"><i class="fa-solid fa-check mr-1"></i> Semua stok pakan dalam kondisi aman.</p>`;
+            }
+
+            renderCharts();
+        }
+
+        // Chart Render
+        function renderCharts() {
+            const ctx = document.getElementById('productionChart');
+            if (!ctx) return;
+
+            const days = parseInt(document.getElementById('chartPeriod')?.value || '7');
+            const logs = getLogs().slice(0, days).reverse();
+
+            const labels = logs.map(l => l.date.substring(5)); // MM-DD
+            const eggData = logs.map(l => l.goodEggs);
+            const feedData = logs.map(l => l.feedKg);
+
+            if (prodChart) {
+                prodChart.destroy();
+            }
+
+            prodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Telur Utuh (Butir)',
+                            data: eggData,
+                            borderColor: '#d97706',
+                            backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Pakan (Kg)',
+                            data: feedData,
+                            borderColor: '#16a34a',
+                            backgroundColor: 'rgba(22, 163, 74, 0.05)',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            fill: false,
+                            tension: 0.2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Jumlah Telur (Butir)', font: { size: 10 } }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'Pakan (Kg)', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            renderCharts();
+        }
+
+        // --- DAILY LOG SECTION ---
+        function calcLiveHDP() {
+            const pop = getPop();
+            const good = parseFloat(document.getElementById('logEggsGood').value) || 0;
+            const feedKg = parseFloat(document.getElementById('logFeedKg').value) || 0;
+
+            const hdp = pop.female > 0 ? ((good / pop.female) * 100).toFixed(1) : 0;
+            const feedPerDuck = pop.female > 0 ? Math.round((feedKg * 1000) / pop.female) : 0;
+
+            document.getElementById('liveHDP').innerText = `${hdp}%`;
+            document.getElementById('liveFeedPerDuck').innerText = `${feedPerDuck} gram`;
+        }
+
+        function saveDailyLog(e) {
+            e.preventDefault();
+            const logs = getLogs();
+            const pop = getPop();
+
+            const death = parseInt(document.getElementById('logDeath').value) || 0;
+            const culled = parseInt(document.getElementById('logCulled').value) || 0;
+
+            const newLog = {
+                id: Date.now(),
+                date: document.getElementById('logDate').value,
+                flock: document.getElementById('logFlock').value,
+                goodEggs: parseInt(document.getElementById('logEggsGood').value) || 0,
+                brokenEggs: parseInt(document.getElementById('logEggsBroken').value) || 0,
+                smallEggs: parseInt(document.getElementById('logEggsSmall').value) || 0,
+                death: death,
+                culled: culled,
+                feedKg: parseFloat(document.getElementById('logFeedKg').value) || 0,
+                notes: document.getElementById('logNotes').value || '-'
+            };
+
+            // Update population if death or culled
+            if (death > 0 || culled > 0) {
+                pop.female = Math.max(0, pop.female - (death + culled));
+                localStorage.setItem(STORE_POP, JSON.stringify(pop));
+            }
+
+            // Remove existing log for same date if exists
+            const existingIdx = logs.findIndex(l => l.date === newLog.date && l.flock === newLog.flock);
+            if (existingIdx >= 0) {
+                logs[existingIdx] = newLog;
+            } else {
+                logs.unshift(newLog);
+            }
+
+            localStorage.setItem(STORE_LOGS, JSON.stringify(logs));
+            showToast("Pencatatan harian berhasil disimpan!", "success");
+            renderAll();
+            document.getElementById('dailyLogForm').reset();
+            document.getElementById('logDate').value = getOffsetDate(0);
+        }
+
+        function renderDailyLogs() {
+            const logs = getLogs();
+            const pop = getPop();
+            const tbody = document.getElementById('dailyLogTableBody');
+            tbody.innerHTML = '';
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Belum ada pencatatan harian.</td></tr>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const totalGood = log.goodEggs;
+                const hdp = pop.female > 0 ? ((totalGood / pop.female) * 100).toFixed(1) : 0;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-medium text-slate-700">${log.date}</td>
+                        <td class="p-3">${log.flock}</td>
+                        <td class="p-3 font-bold text-emerald-600">${log.goodEggs}</td>
+                        <td class="p-3 text-rose-500">${log.brokenEggs + log.smallEggs}</td>
+                        <td class="p-3 font-semibold text-indigo-600">${hdp}%</td>
+                        <td class="p-3">${log.feedKg} kg</td>
+                        <td class="p-3 text-slate-500">${log.death + log.culled} ekor</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteLog(${log.id})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteLog(id) {
+            if (confirm("Hapus catatan ini?")) {
+                let logs = getLogs().filter(l => l.id !== id);
+                localStorage.setItem(STORE_LOGS, JSON.stringify(logs));
+                renderAll();
+                showToast("Catatan dihapus", "info");
+            }
+        }
+
+        // --- INVENTORY & FEED MIXER SECTION ---
+        function renderInventory() {
+            const feeds = getFeeds();
+            const grid = document.getElementById('feedStockGrid');
+            grid.innerHTML = '';
+
+            feeds.forEach(f => {
+                const isLow = f.qty <= f.min;
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl border ${isLow ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200'} shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-800 text-sm">${f.name}</h4>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isLow ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">
+                                    ${isLow ? 'Stok Rendah' : 'Tersedia'}
+                                </span>
+                            </div>
+                            <div class="flex items-baseline space-x-2">
+                                <span class="text-2xl font-extrabold text-slate-800">${f.qty}</span>
+                                <span class="text-xs text-slate-500">Kg</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1">Estimasi Harga: ${formatRp(f.price)} / Kg</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Min. Stok: ${f.min} Kg</span>
+                            <button onclick="deleteFeed(${f.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openAddFeedModal() {
+            document.getElementById('feedModal').classList.remove('hidden');
+        }
+        function closeFeedModal() {
+            document.getElementById('feedModal').classList.add('hidden');
+        }
+
+        function saveFeedStock(e) {
+            e.preventDefault();
+            const feeds = getFeeds();
+            const newFeed = {
+                id: Date.now(),
+                name: document.getElementById('feedName').value,
+                qty: parseFloat(document.getElementById('feedQty').value),
+                min: parseFloat(document.getElementById('feedMin').value),
+                price: parseFloat(document.getElementById('feedPrice').value),
+                pk: 12
+            };
+
+            feeds.push(newFeed);
+            localStorage.setItem(STORE_FEEDS, JSON.stringify(feeds));
+            closeFeedModal();
+            showToast("Stok pakan berhasil ditambah!", "success");
+            renderAll();
+            document.getElementById('feedStockForm').reset();
+        }
+
+        function deleteFeed(id) {
+            if (confirm("Hapus pakan ini dari stok?")) {
+                let feeds = getFeeds().filter(f => f.id !== id);
+                localStorage.setItem(STORE_FEEDS, JSON.stringify(feeds));
+                renderAll();
+                showToast("Stok pakan dihapus", "info");
+            }
+        }
+
+        // Feed Mixer Calculator logic
+        function renderFeedMixer() {
+            const container = document.getElementById('feedMixRows');
+            container.innerHTML = '';
+
+            let totalWeight = 0;
+            let totalPKContribution = 0;
+
+            mixRows.forEach((row, idx) => {
+                totalWeight += parseFloat(row.weight) || 0;
+                totalPKContribution += (parseFloat(row.weight) || 0) * (parseFloat(row.pk) || 0);
+
+                container.innerHTML += `
+                    <div class="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs">
+                        <input type="text" value="${row.name}" onchange="updateMixRow(${idx}, 'name', this.value)" class="col-span-4 border border-slate-300 rounded-lg p-1.5">
+                        <input type="number" step="0.5" min="0" value="${row.weight}" oninput="updateMixRow(${idx}, 'weight', this.value)" class="col-span-3 border border-slate-300 rounded-lg p-1.5 font-bold">
+                        <input type="number" step="0.1" value="${row.pk}" oninput="updateMixRow(${idx}, 'pk', this.value)" class="col-span-2 border border-slate-300 rounded-lg p-1.5 text-center">
+                        <button onclick="removeMixRow(${idx})" class="col-span-3 text-rose-500 hover:text-rose-700 text-center"><i class="fa-solid fa-xmark"></i> Hapus</button>
+                    </div>
+                `;
+            });
+
+            const avgPK = totalWeight > 0 ? (totalPKContribution / totalWeight).toFixed(1) : 0;
+
+            document.getElementById('mixTotalWeight').innerText = `${totalWeight} Kg`;
+            document.getElementById('mixTotalPK').innerText = `${avgPK} %`;
+
+            const statusBadge = document.getElementById('mixStatusBadge');
+            if (avgPK >= 17 && avgPK <= 19.5) {
+                statusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700';
+                statusBadge.innerText = 'Ideal Bebek Petelur (17-19%)';
+            } else if (avgPK < 17) {
+                statusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700';
+                statusBadge.innerText = 'Kurang Protein (<17%)';
+            } else {
+                statusBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700';
+                statusBadge.innerText = 'Tinggi Protein (>19%)';
+            }
+        }
+
+        function updateMixRow(idx, key, val) {
+            mixRows[idx][key] = key === 'name' ? val : parseFloat(val) || 0;
+            renderFeedMixer();
+        }
+
+        function addMixRow() {
+            mixRows.push({ name: 'Bahan Tambahan', weight: 1, pk: 10 });
+            renderFeedMixer();
+        }
+
+        function removeMixRow(idx) {
+            if (mixRows.length > 1) {
+                mixRows.splice(idx, 1);
+                renderFeedMixer();
+            }
+        }
+
+        // --- FINANCE SECTION ---
+        function toggleTransFields() {
+            const type = document.getElementById('transType').value;
+            const catSelect = document.getElementById('transCategory');
+            const eggBox = document.getElementById('eggSaleCalcBox');
+
+            catSelect.innerHTML = '';
+
+            if (type === 'INCOME') {
+                catSelect.innerHTML = `
+                    <option value="Penjualan Telur">Penjualan Telur</option>
+                    <option value="Penjualan Bebek Afkir">Penjualan Bebek Afkir / Daging</option>
+                    <option value="Lainnya">Pemasukan Lain-lain</option>
+                `;
+                eggBox.classList.remove('hidden');
+            } else {
+                catSelect.innerHTML = `
+                    <option value="Pembelian Pakan">Pembelian Pakan</option>
+                    <option value="Vaksin & Obat">Vaksin / Obat / Vitamin</option>
+                    <option value="Listrik & Air">Listrik & Operasional</option>
+                    <option value="Gaji Pekerja">Gaji Pekerja</option>
+                    <option value="Pembelian DOD/Bebek">Pembelian DOD / Bebek Remaja</option>
+                `;
+                eggBox.classList.add('hidden');
+            }
+        }
+
+        function calcEggSaleTotal() {
+            const qty = parseFloat(document.getElementById('transEggQty').value) || 0;
+            const unit = document.getElementById('transEggUnit').value;
+            const price = parseFloat(document.getElementById('transEggUnitPrice').value) || 0;
+
+            let totalButir = qty;
+            if (unit === 'ikat' || unit === 'karpet') totalButir = qty * 30;
+            if (unit === 'kg') totalButir = qty * 15; // Estimasi 1kg = 15 butir bebek
+
+            const totalAmount = totalButir * price;
+            document.getElementById('transAmount').value = totalAmount;
+        }
+
+        function saveTransaction(e) {
+            e.preventDefault();
+            const trans = getTrans();
+
+            const newTrans = {
+                id: Date.now(),
+                type: document.getElementById('transType').value,
+                category: document.getElementById('transCategory').value,
+                date: document.getElementById('transDate').value,
+                amount: parseFloat(document.getElementById('transAmount').value) || 0,
+                desc: document.getElementById('transDesc').value || '-'
+            };
+
+            trans.unshift(newTrans);
+            localStorage.setItem(STORE_TRANS, JSON.stringify(trans));
+            showToast("Transaksi berhasil dicatat!", "success");
+            renderAll();
+            document.getElementById('financeForm').reset();
+            document.getElementById('transDate').value = getOffsetDate(0);
+            toggleTransFields();
+        }
+
+        function renderFinance() {
+            const trans = getTrans();
+            const tbody = document.getElementById('financeTableBody');
+            tbody.innerHTML = '';
+
+            let totalInc = 0;
+            let totalExp = 0;
+
+            trans.forEach(t => {
+                if (t.type === 'INCOME') totalInc += Number(t.amount);
+                if (t.type === 'EXPENSE') totalExp += Number(t.amount);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-medium text-slate-700">${t.date}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${t.type === 'INCOME' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                ${t.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
+                            </span>
+                        </td>
+                        <td class="p-3">${t.category}</td>
+                        <td class="p-3 text-slate-500">${t.desc}</td>
+                        <td class="p-3 text-right font-bold ${t.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${t.type === 'INCOME' ? '+' : '-'} ${formatRp(t.amount)}
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteTrans(${t.id})" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('finTotalIncome').innerText = formatRp(totalInc);
+            document.getElementById('finTotalExpense').innerText = formatRp(totalExp);
+
+            const net = totalInc - totalExp;
+            document.getElementById('finNetProfit').innerText = formatRp(net);
+            const statusEl = document.getElementById('finROIStatus');
+            if (net >= 0) {
+                statusEl.className = "text-[11px] font-semibold text-emerald-600 mt-1";
+                statusEl.innerText = "Margin Positif (Untung)";
+            } else {
+                statusEl.className = "text-[11px] font-semibold text-rose-600 mt-1";
+                statusEl.innerText = "Defisit / Kerugian";
+            }
+        }
+
+        function deleteTrans(id) {
+            if (confirm("Hapus transaksi ini?")) {
+                let trans = getTrans().filter(t => t.id !== id);
+                localStorage.setItem(STORE_TRANS, JSON.stringify(trans));
+                renderAll();
+                showToast("Transaksi dihapus", "info");
+            }
+        }
+
+        // --- HEALTH & SCHEDULE SECTION ---
+        function renderSchedules() {
+            const scheds = getSched();
+            const container = document.getElementById('scheduleList');
+            container.innerHTML = '';
+
+            if (scheds.length === 0) {
+                container.innerHTML = `<p class="text-slate-400">Belum ada agenda kesehatan yang dijadwalkan.</p>`;
+                return;
+            }
+
+            scheds.forEach(s => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-3 rounded-xl border ${s.done ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 shadow-sm'}">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" ${s.done ? 'checked' : ''} onchange="toggleScheduleDone(${s.id})" class="w-4 h-4 text-brand-600 rounded">
+                            <div>
+                                <h5 class="font-bold text-slate-800 ${s.done ? 'line-through' : ''}">${s.title}</h5>
+                                <span class="text-[11px] text-slate-400"><i class="fa-solid fa-calendar mr-1"></i>${s.date} • ${s.category}</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteSchedule(${s.id})" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function openAddScheduleModal() {
+            document.getElementById('scheduleModal').classList.remove('hidden');
+        }
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').classList.add('hidden');
+        }
+
+        function saveSchedule(e) {
+            e.preventDefault();
+            const scheds = getSched();
+
+            const newSched = {
+                id: Date.now(),
+                title: document.getElementById('schedTitle').value,
+                date: document.getElementById('schedDate').value,
+                category: document.getElementById('schedCategory').value,
+                done: false
+            };
+
+            scheds.push(newSched);
+            localStorage.setItem(STORE_SCHED, JSON.stringify(scheds));
+            closeScheduleModal();
+            showToast("Agenda berhasil ditambahkan!", "success");
+            renderAll();
+            document.getElementById('scheduleForm').reset();
+        }
+
+        function toggleScheduleDone(id) {
+            const scheds = getSched();
+            const item = scheds.find(s => s.id === id);
+            if (item) {
+                item.done = !item.done;
+                localStorage.setItem(STORE_SCHED, JSON.stringify(scheds));
+                renderSchedules();
+            }
+        }
+
+        function deleteSchedule(id) {
+            if (confirm("Hapus agenda ini?")) {
+                let scheds = getSched().filter(s => s.id !== id);
+                localStorage.setItem(STORE_SCHED, JSON.stringify(scheds));
+                renderSchedules();
+                showToast("Agenda dihapus", "info");
+            }
+        }
+
+        // --- EXPORT TO CSV ---
+        function exportToCSV() {
+            const logs = getLogs();
+            if (logs.length === 0) {
+                showToast("Tidak ada data untuk diekspor", "warning");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Tanggal,Kandang,Telur_Utuh,Telur_Rusak,Telur_Kecil,Pakan_Kg,Mati,Afkir,Catatan\n";
+            logs.forEach(l => {
+                csvContent += `${l.date},${l.flock},${l.goodEggs},${l.brokenEggs},${l.smallEggs},${l.feedKg},${l.death},${l.culled},"${l.notes}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Ternak_Bebek_${getOffsetDate(0)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Berhasil mengunduh laporan CSV!", "success");
+        }
+
+        // --- UTILITY FUNCTIONS ---
+        function formatRp(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+        }
+
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('toastAlert');
+            const icon = document.getElementById('toastIcon');
+            const text = document.getElementById('toastMsg');
+
+            text.innerText = msg;
+            toast.className = "p-4 rounded-xl shadow-md border flex items-center justify-between transition-all mb-4 ";
+
+            if (type === "success") {
+                toast.classList.add("bg-emerald-50", "border-emerald-200", "text-emerald-800");
+                icon.className = "fa-solid fa-circle-check text-emerald-600 text-xl";
+            } else if (type === "warning") {
+                toast.classList.add("bg-amber-50", "border-amber-200", "text-amber-800");
+                icon.className = "fa-solid fa-triangle-exclamation text-amber-600 text-xl";
+            } else {
+                toast.classList.add("bg-blue-50", "border-blue-200", "text-blue-800");
+                icon.className = "fa-solid fa-circle-info text-blue-600 text-xl";
+            }
+
+            toast.classList.remove('hidden');
+            setTimeout(() => { closeToast(); }, 3500);
+        }
+
+        function closeToast() {
+            document.getElementById('toastAlert').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
